@@ -1,0 +1,18 @@
+{
+  "name": "tessel2",
+  "version": "0.0.0",
+  "description": "Tessel project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "keywords": [
+    "Tessel"
+  ],
+  "license": "MIT",
+  "readme": "A bare bones Tessel 2 blinky script.",
+  "dependencies": {
+    "climate-si7020": "^0.1.1"
+  }
+}
