@@ -13,6 +13,9 @@
   "license": "MIT",
   "readme": "A bare bones Tessel 2 blinky script.",
   "dependencies": {
-    "climate-si7020": "^0.1.1"
+    "climate-si7020": "^0.1.1",
+    "moment": "^2.13.0",
+    "request": "^2.72.0",
+    "underscore": "^1.8.3"
   }
 }
