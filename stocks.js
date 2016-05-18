@@ -4,7 +4,6 @@
   var moment = require('moment');
   var request = require('request');
   var numeral = require('numeral');
-  var fs = require('fs')
 
   var settings = _.extend({
                             stocks: [
@@ -69,38 +68,32 @@
   var stockUrlString = stocks.join(',');
   var stockUrl = 'http://finance.yahoo.com/webservice/v1/symbols/' + stockUrlString + '/quote?format=json&view=detail';
   var notificationUrl = 'https://maker.ifttt.com/trigger/notify_phone/with/key/nJmkROGFY8SCwaUw0iUvOo5C7erVfGDVTPLqTq5BN6L';
-  var logPath = __dirname + 'log.json'
 
-  var log;
-
-  function getStockValueForToday() {
+  function getStockValueForToday(callback) {
+    console.log('getStockValueForToday')
     request({url: stockUrl, json: true}, function (error, response, body) {
       if (!error && response.statusCode == 200) {
-        successCallback(body)
+        successCallback(body, function (error, response, body) {
+          if (!error && response.statusCode == 200) {
+            console.log("notify phone done")
+            callback()
+          }
+          else {
+            console.log(error)
+            callback(error)
+          }
+        })
       }
       else {
         console.log(error)
+        callback(error)
       }
+
     })
   }
 
-  function readLog() {
-    if (fs.existsSync(logPath)) {
-      log = JSON.parse(fs.readFileSync(logPath))
-    }
-    else {
-      log = {
-        lastDate: null
-      }
-      writeLog()
-    }
-  }
-
-  function writeLog() {
-    fs.writeFileSync(logPath, JSON.stringify(log))
-  }
-
-  function successCallback(data) {
+  function successCallback(data, notifyCallback) {
+    console.log('yahoo stocks read successfully')
     var stocks = _.indexBy(settings.stocks, 'symbol');
     var mergedStocks = {};
     _.each(data.list.resources, function (stockResource) {
@@ -133,10 +126,10 @@
                                 }, 0);
     currentValue += settings.cash;
     var totalGainOrLoss = currentValue - settings.startInvestment;
-    console.log('Total:' + totalGainOrLoss.toFixed(2))
-    console.log('Daily:' + dailyChange.toFixed(2))
+    // console.log('Total:' + totalGainOrLoss.toFixed(2))
+    // console.log('Daily:' + dailyChange.toFixed(2))
 
-    notifyPhone(totalGainOrLoss.toFixed(2), dailyChange.toFixed(2))
+    notifyPhone(totalGainOrLoss.toFixed(2), dailyChange.toFixed(2), notifyCallback)
   }
 
   function formatUSD(value) {
@@ -148,47 +141,22 @@
     }
   }
 
-  function notifyPhone(total, daily) {
+  function notifyPhone(total, daily, callback) {
+    console.log('notifyPhone', [total, daily])
+
     var message = 'Total Gain or Loss : ' +
                   formatUSD(total) +
                   '\nDaily Change : ' +
                   formatUSD(daily);
     console.log(message)
     request({
-              url: notificationUrl, json: true, method: 'POST',
+              url: notificationUrl,
+              json: true,
+              method: 'POST',
               body: {value1: message}
-            })
-    updateLog()
+            }, callback)
+
   }
 
-  function updateLog() {
-    log.lastDate = new Date();
-  }
-
-  function isWeekday() {
-    var currentDay = moment().day()
-    return currentDay !== 0 && currentDay !== 6
-  }
-
-  function getNextTimeForQuery(){
-    if(log.lastDate){
-      return moment(log.lastDate).add(1, 'day').startOf('day').add(17, 'hours')
-    }
-    else{
-      return moment().startOf('day').add(17, 'hours')
-    }
-  }
-
-  function getTimeUntilNextEvening() {
-    return moment.
-  }
-
-  setImmediate(function loop() {
-    readLog();
-    if (isWeekday()) {
-      getStockValueForToday()
-      setTimeout(loop, 1000 * 60)
-    }
-  })
-
+  module.exports = {getStockValueForToday: getStockValueForToday}
 })()

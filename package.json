@@ -14,9 +14,12 @@
   "readme": "A bare bones Tessel 2 blinky script.",
   "dependencies": {
     "climate-si7020": "^0.1.1",
+    "httpdispatcher": "^1.0.0",
     "moment": "^2.13.0",
+    "node-task-scheduler": "^2.2.0",
     "numeral": "^1.5.3",
     "request": "^2.72.0",
+    "tessel": "^0.3.24",
     "underscore": "^1.8.3"
   }
 }
